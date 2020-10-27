@@ -244,6 +244,7 @@ class trainer():
         
     def train(self, trial, lr_imgs, hr_imgs, epoch, optuna_ED=False):
 
+        # Generate UUID
         trial_uuid = str(uuid.uuid4())
         trial.set_user_attr("uuid", trial_uuid)
 
@@ -325,7 +326,7 @@ class trainer():
                 raise optuna.exceptions.TrialPruned()
 
             # Plotting and Saving the loss value
-            if (epoch+1) % 10 == 0:
+            if (epoch+1) % 50 == 0:
                 plt.plot(g_loss_plt)
                 plt.savefig(self.graph_path, bbox_inches='tight', pad_inches=0.1)        
 
