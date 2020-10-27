@@ -171,26 +171,26 @@ def main():
     # Create output folder (If the folder exists, it will not be created.)
     os.makedirs(args.out, exist_ok=True)
 
-    for c in os.listdir(param_dir):
-        param_f = os.path.join(param_dir, c)
+    for c in os.listdir(args.param):
+        param_f = os.path.join(args.param, c)
 
         _, ext = os.path.splitext(c)
         if ext.lower() not in '.h5':
             continue
 
         # Network Setup
-        model = Generator(input_shape=(he, wi, 3))
-        model.build((None, he, wi, 3))
+        model = Generator(input_shape=(args.he, args.wi, 3))
+        model.build((None, args.he, args.wi, 3))
         model.load_weights(param_f)
 
         # High-resolutin Image
-        img = cv2.imread(data_img)
+        img = cv2.imread(args.data_img)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        hr_img = cv2.resize(img, (he, wi))
+        hr_img = cv2.resize(img, (args.he, args.wi))
 
         # Low-resolution Image
-        lr_img = cv2.resize(hr_img, (int(he/mag), int(wi/mag)))
-        lr_img = cv2.resize(lr_img, (he, wi))
+        lr_img = cv2.resize(hr_img, (int(args.he/args.mag), int(args.wi/args.mag)))
+        lr_img = cv2.resize(lr_img, (args.he, args.wi))
         lr_img_s = lr_img
 
         # Image processing
@@ -203,11 +203,11 @@ def main():
         re = model.predict(lr_img)
     
         # Super-resolution Image processing
-        re = np.reshape(re, (he, wi, 3))
+        re = np.reshape(re, (args.he, args.wi, 3))
         re = re * 127.5 + 127.5
         re = np.clip(re, 0.0, 255.0)
 
-        plt.figure(figsize=(he*0.1,wi*0.1))
+        plt.figure(figsize=(args.he*0.1,args.wi*0.1))
 
         # Low-resolution Image Output
         lr_img = Image.fromarray(np.uint8(lr_img_s))
@@ -228,7 +228,7 @@ def main():
         plt.axis('off')
 
         # Save Image
-        plt.savefig(os.path.join(out, "SRGAN-Result-Image-"+c[6:10]+".png"))
+        plt.savefig(os.path.join(args.out, "SRGAN-Result-Image-"+c[6:10]+".png"))
     
 if __name__ == "__main__":
     main()
