@@ -246,10 +246,11 @@ class trainer():
 
         # Generate UUID
         trial_uuid = str(uuid.uuid4())
-        trial.set_user_attr("uuid", trial_uuid)
 
         # Optuna Enable
         if optuna_ED:
+            trial.set_user_attr("uuid", trial_uuid)
+
             learning_rate = trial.suggest_loguniform('learning_rate', 1e-5, 1e-2) # Adam Learning-rate
             loss_weight_a = trial.suggest_loguniform('loss_weight_a', 1e-1, 1.5) # content-loss weight
             loss_weight_b = trial.suggest_loguniform('loss_weight_b', 1e-5, 1e-2) # BCE weight
@@ -319,11 +320,12 @@ class trainer():
             g_loss_plt.append(g_loss[0])
 
             obj_func = g_loss[0] # SRGAN Loss
-            trial.report(obj_func, epoch+1)
-            # Pruning
-            if trial.should_prune():
-                print("\nCeased at the {} learning".format(epoch+1))
-                raise optuna.exceptions.TrialPruned()
+            if optuna_ED:
+                trial.report(obj_func, epoch+1)
+                # Pruning
+                if trial.should_prune():
+                    print("\nCeased at the {} learning".format(epoch+1))
+                    raise optuna.exceptions.TrialPruned()
 
             # Plotting and Saving the loss value
             if (epoch+1) % 50 == 0:
@@ -465,8 +467,9 @@ def main():
         print("Best params: ", Trainer_op.best_params)
         print("Best test accuracy: ", Trainer_op.best_value)
     else:
-        Trainer = trainer(lr_imgs[0], hr_imgs[0])
-        Trainer.train(lr_imgs, hr_imgs, out_path=args.out, batch_size=args.batch_size, epoch=args.epoch)
+        trial = 0 # Dummy
+        Trainer = trainer(lr_imgs[0], hr_imgs[0], out_path=args.out, batch_size=args.batch_size)
+        Trainer.train(trial, lr_imgs, hr_imgs, epoch=args.epoch)
 
 if __name__ == '__main__':
     main()
